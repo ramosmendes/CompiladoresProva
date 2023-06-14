@@ -1,58 +1,115 @@
-def criar_lista_regras_gramatica():
-    lista = ['S → AB  | CSB', 'A → aB  | C', 'B → bbB | b']
-    return lista
+# Exemplo da gramática f)
+gramatica = {
+    'S': ['AB', 'BCS'],
+    'A': ['aA', 'C'],
+    'B': ['bbB', 'b'],
+    'C': ['cC', 'λ']
+}
+
+# Imprimir gramática na tela
+for variavel, producoes in gramatica.items():
+    producoes_formatadas = ' | '.join(producoes)
+    print(f"{variavel} -> {producoes_formatadas}")
 
 
-def criar_lista_simplificado():
-    lista = ['\nSimplificando:', 'Removendo variável inútil C:',
-             'S → AB', 'A → aB', 'B → bbB | b']
-    return lista
+# Eliminação de produções vazias:
+def verifica_lambda_na_gramatica(gramatica):
+    for producoes in gramatica.values():
+        if 'λ' in producoes:
+            gramatica['S'].append('B')
+            gramatica['S'].append('BS')
+            gramatica['A'].append('a')
+            gramatica['C'].remove('λ')
+            gramatica['C'].append('c')
+            return "\nA gramática contém produções vazias. Hora de resolver:"
+    return "\nA gramática não contém produções vazias."
 
 
-def criar_lista_chomsky():
-    lista = ['\nTransformando em Chomsky:', 'S → AB', 'A → X₁B',
-             'B → X₃B | b', 'X₁ → a', 'X₂ → b', 'X₃ → X₂X₂']
-    return lista
+resultado = verifica_lambda_na_gramatica(gramatica)
+print(resultado)
+
+# Imprimir gramática na tela
+for variavel, producoes in gramatica.items():
+    producoes_formatadas = ' | '.join(producoes)
+    print(f"{variavel} -> {producoes_formatadas}")
 
 
-def criar_lista_renomeado():
-    lista = ['\nRenomeando as variáveis:', 'A₁ → A₂A₃', 'A₂ → A₄A₃',
-             'A₃ → A₆A₃ | b', 'A₄ → a', 'A₅ → b', 'A₆ → A₅A₅']
-    return lista
+# Eliminação de produções unitárias:
+def verifica_unitario_na_gramatica(gramatica):
+    for producoes in gramatica.values():
+        if 'B' in producoes or 'C' in producoes:
+            gramatica['S'].remove('B')
+            gramatica['S'].append('bbB')
+            gramatica['S'].append('b')
+            gramatica['A'].remove('C')
+            gramatica['A'].append('cC')
+            gramatica['A'].append('c')
+            return "\nA gramática contém produções unitárias. Hora de resolver:"
+    return "\nA gramática não contém produções unitárias."
 
 
-def criar_lista_greibach():
-    lista = ['\nPassando pra Greibach:', 'A₁ → aA₃A₃', 'A₂ → aA₃',
-             'A₃ → bA₅A₃ | b', 'A₄ → a', 'A₅ → b', 'A₆ → bA₅']
-    return lista
+resultado = verifica_unitario_na_gramatica(gramatica)
+print(resultado)
+
+# Imprimir gramática na tela
+for variavel, producoes in gramatica.items():
+    producoes_formatadas = ' | '.join(producoes)
+    print(f"{variavel} -> {producoes_formatadas}")
+
+print('Simplificação completa. Hora de renomearmos as variáveis: ')
 
 
-# Criar lista com as regras da gramática
-regras_gramatica = criar_lista_regras_gramatica()
+def substituir_valores_gramatica(gramatica, valor_antigo, valor_novo):
+    for variavel, producoes in gramatica.items():
+        for i in range(len(producoes)):
+            producoes[i] = producoes[i].replace(valor_antigo, valor_novo)
 
-# Criar lista com a simplificação da gramática
-simplificado = criar_lista_simplificado()
 
-# Criar lista com a transformação para a forma de Chomsky
-chomsky = criar_lista_chomsky()
+# Substituir 'B' por 'X'
+substituir_valores_gramatica(gramatica, 'A', 'A₂')
+substituir_valores_gramatica(gramatica, 'B', 'A₃')
+substituir_valores_gramatica(gramatica, 'C', 'A₄')
+substituir_valores_gramatica(gramatica, 'S', 'A₁')
 
-# Criar lista com as variáveis renomeadas
-renomeado = criar_lista_renomeado()
+# Renomeamos os valores da gramática, agora é necessário renomear as chaves
+# Função para renomear as chaves da gramática
 
-greibach = criar_lista_greibach()
 
-# Imprimir as regras da gramática
-print('Gramática livre de contexto:')
-print('\n'.join(regras_gramatica))
+def renomear_chaves_gramatica(gramatica, mapeamento_chaves):
+    nova_gramatica = {}
+    for variavel, producoes in gramatica.items():
+        nova_variavel = mapeamento_chaves.get(variavel, variavel)
+        nova_gramatica[nova_variavel] = producoes
+    return nova_gramatica
 
-# Imprimir a simplificação da gramática
-print('\n'.join(simplificado))
 
-# Imprimir a transformação para a forma de Chomsky
-print('\n'.join(chomsky))
+# Mapear as chaves
+mapeamento_chaves = {
+    'S': 'A₁',
+    'A': 'A₂',
+    'B': 'A₃',
+    'C': 'A₄'
+}
 
-# Imprimir as variáveis renomeadas
-print('\n'.join(renomeado))
+# Renomear as chaves da gramática
+gramatica = renomear_chaves_gramatica(gramatica, mapeamento_chaves)
 
-# Imprimir a forma de Greibach
-print('\n'.join(greibach))
+# Imprimir a gramática atualizada
+for variavel, producoes in gramatica.items():
+    producoes_formatadas = ' | '.join(producoes)
+    print(f"{variavel} -> {producoes_formatadas}")
+
+print('\nNão temos elementos recursivos então vamos garantir que comece com terminal.')
+novos_valores = ['aA₂A₃', 'aA₃', 'cA₄A₃', 'cA₃',
+                 'bbA₃A₄A₁', 'bA₄A₁', 'bbA₃A₁', 'bA₁', 'bbA₃', 'b']
+gramatica['A₁'].clear()
+
+for valor in novos_valores:
+    gramatica['A₁'].append(valor)
+
+# Imprime a gramática atualizada
+for variavel, producoes in gramatica.items():
+    producoes_formatadas = ' | '.join(producoes)
+    print(f"{variavel} -> {producoes_formatadas}")
+
+print('FINALIZADO')
